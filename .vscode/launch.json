@@ -1,0 +1,12 @@
+{
+    "configurations": [{
+        "type": "java",
+        "name": "Spring Boot-BackendServiceApplication<backend-service>",
+        "request": "launch",
+        "cwd": "${workspaceFolder}",
+        "mainClass": "vn.thanhquan.BackendServiceApplication",
+        "projectName": "backend-service",
+        "args": "",
+        "envFile": "${workspaceFolder}/.env"
+    }]
+}
