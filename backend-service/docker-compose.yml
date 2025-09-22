@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Dịch vụ Cơ sở dữ liệu MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: testdb
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      # Ánh xạ cổng 3306 của container ra cổng 3306 trên máy thật
+      - "3306:3306"
+    volumes:
+      # Giữ lại dữ liệu database ngay cả khi container bị xóa
+      - mysql_data:/var/lib/mysql
+      # Chạy script SQL để khởi tạo database khi container được tạo lần đầu
+      - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+    networks:
+      - my_network
+
+  # Dịch vụ ứng dụng Backend
+  backend-service:
+    container_name: backend-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      # Ánh xạ cổng 8080 của ứng dụng ra cổng 8080 trên máy thật
+      - "8080:8080"
+    networks:
+      - my_network
+    depends_on:
+      # Yêu cầu Docker khởi động service 'mysql' trước 'backend-service'
+      - mysql
+    environment:
+      # Cấu hình để backend kết nối tới database
+      # Tên 'mysql' chính là tên của service database ở trên
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/testdb?useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password
+
+# Định nghĩa volumes và networks để quản lý tập trung
+volumes:
+  mysql_data:
+
+
+networks:
+  my_network:
+    driver: bridge
