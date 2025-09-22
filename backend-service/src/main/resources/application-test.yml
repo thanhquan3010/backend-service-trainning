@@ -12,3 +12,16 @@ jpa:
   properties:
     hibernate:
       format_sql: true
+
+# application-test.yml
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+openapi:
+  service:
+    api-docs: backend-service
+    server: ${BACKEND_SERVICE:http://localhost:${server.port}}
+    title: Backend service
+    version: 1.0.0

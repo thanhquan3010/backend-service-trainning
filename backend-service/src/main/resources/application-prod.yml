@@ -12,3 +12,10 @@ jpa:
   properties:
     hibernate:
       format_sql: true
+
+# application-prod.yml
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
