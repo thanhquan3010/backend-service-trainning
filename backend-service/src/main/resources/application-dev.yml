@@ -16,6 +16,12 @@ jpa:
   show-sql: false
   hibernate:
     ddl-auto: none
+
+sendGrid:
+  apiKey: ${SENDGRID_API_KEY}
+  fromEmail: tranthanhquan09@gmail.com
+  templateId: d-8d276ce816254b399ebcc962d2f2199a
+  verificationLink: http://localhost:8080/user/confirm-email
 # jpa:
 #   database-platform: org.hibernate.dialect.H2Dialect
 #   hibernate:

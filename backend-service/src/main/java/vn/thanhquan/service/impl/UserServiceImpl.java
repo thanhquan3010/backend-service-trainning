@@ -1,5 +1,6 @@
 package vn.thanhquan.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -22,6 +23,7 @@ import vn.thanhquan.model.UserEntity;
 import vn.thanhquan.controller.request.AddressRequest;
 import vn.thanhquan.repository.AddressRepository;
 import vn.thanhquan.repository.UserRepository;
+import vn.thanhquan.service.EmailService;
 import vn.thanhquan.service.UserService;
 
 @Service
@@ -33,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final AddressRepository addressRepository;
     private final AddressRequest addressRequest;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Override
     public List<UserResponse> findAll() {
@@ -96,6 +99,12 @@ public class UserServiceImpl implements UserService {
             log.info("Saved addresses: {}", addresses);
         }
 
+        // send email
+        try {
+            emailService.emailVerification(req.getEmail(), req.getUsername());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return savedUser.getId();
 
     }

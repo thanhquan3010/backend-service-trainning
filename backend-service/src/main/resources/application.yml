@@ -7,6 +7,7 @@ spring:
   profiles:
     active: @spring.profiles.active@
 
+
 management:
   endpoints:
     web:
@@ -17,3 +18,4 @@ logging:
   level:
     root: INFO
     web: INFO
+
