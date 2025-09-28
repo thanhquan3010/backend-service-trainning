@@ -2,7 +2,10 @@ package vn.thanhquan.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
+import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails.Address;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +16,7 @@ import vn.thanhquan.controller.request.UserCreationRequest;
 import vn.thanhquan.controller.request.UserPasswordRequest;
 import vn.thanhquan.controller.request.UserUpdateRequest;
 import vn.thanhquan.controller.response.UserResponse;
+import vn.thanhquan.exception.ResourceNotFoundException;
 import vn.thanhquan.model.AddressEntity;
 import vn.thanhquan.model.UserEntity;
 import vn.thanhquan.controller.request.AddressRequest;
@@ -27,6 +31,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
+    private final AddressRequest addressRequest;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<UserResponse> findAll() {
@@ -95,21 +101,86 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional // Thêm @Transactional để đảm bảo tất cả các thao tác đều thành công hoặc thất
+                   // bại cùng nhau
     public void update(UserUpdateRequest req) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+        log.info("Updating user: {}", req);
+
+        // 1. Lấy user hiện tại từ DB
+        UserEntity user = userRepository.findById(req.getId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + req.getId()));
+
+        // 2. Cập nhật thông tin cho user
+        user.setFirstName(req.getFirstName());
+        user.setLastName(req.getLastName());
+        user.setGender(req.getGender());
+        user.setBirthday(req.getBirthday());
+        user.setEmail(req.getEmail());
+        user.setPhone(req.getPhone());
+        user.setUsername(req.getUsername());
+
+        // 3. Lưu user đã cập nhật và lấy về đối tượng đã được quản lý bởi JPA
+        UserEntity savedUser = userRepository.save(user);
+        log.info("Updated user successfully: {}", savedUser.getId());
+
+        // 4. Cập nhật hoặc thêm mới địa chỉ
+        if (req.getAddressRequests() != null) {
+            req.getAddressRequests().forEach(addressRequest -> {
+
+                // Tìm địa chỉ dựa trên user và loại địa chỉ
+                AddressEntity addressEntity = addressRepository.findByUserIdAndAddressType(
+                        savedUser.getId(),
+                        addressRequest.getAddressType());
+
+                // Nếu chưa có -> tạo mới
+                if (addressEntity == null) {
+                    addressEntity = new AddressEntity();
+                    // Gán user cho địa chỉ mới
+                    addressEntity.setUser(savedUser);
+                }
+
+                // Cập nhật thông tin từ request
+                addressEntity.setApartmentNumber(addressRequest.getApartmentNumber());
+                addressEntity.setFloor(addressRequest.getFloor());
+                addressEntity.setBuilding(addressRequest.getBuilding());
+                addressEntity.setStreetNumber(addressRequest.getStreetNumber());
+                addressEntity.setStreet(addressRequest.getStreet());
+                addressEntity.setCity(addressRequest.getCity());
+                addressEntity.setCountry(addressRequest.getCountry());
+                addressEntity.setAddressType(addressRequest.getAddressType());
+
+                // Lưu địa chỉ vào DB
+                addressRepository.save(addressEntity);
+            });
+        }
     }
 
     @Override
     public void changePassword(UserPasswordRequest req) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'changePassword'");
+        log.info("Changin password for user: {}", req);
+        // get user entity
+        UserEntity userEntity = getUserEntity(req.getId());
+        if (req.getPassword().equals(req.getConfirmPassword())) {
+            userEntity.setPassword(passwordEncoder.encode(req.getPassword()));
+        }
+
+        userRepository.save(userEntity);
+        log.info("Changing password success{}", userEntity);
     }
 
     @Override
     public void delete(Long id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        log.info("Deleting user: {}", id);
+
+        // Get user by id
+        UserEntity user = getUserEntity(id); // Giả định đây là một phương thức private
+        user.setStatus(UserStatus.INACTIVE);
+
+        userRepository.save(user);
+        log.info("Deleted user: {}", user);
     }
 
+    private UserEntity getUserEntity(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
 }
