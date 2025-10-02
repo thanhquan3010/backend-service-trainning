@@ -1,5 +1,7 @@
 package vn.thanhquan.model;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -23,12 +25,16 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+
 
 @Getter
 @Setter
 @Entity
 @Table(name = "tbl_user")
-public class UserEntity {
+public class UserEntity implements Serializable, UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -80,5 +86,13 @@ public class UserEntity {
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAuthorities'");
+    }
+
+    
 
 }
