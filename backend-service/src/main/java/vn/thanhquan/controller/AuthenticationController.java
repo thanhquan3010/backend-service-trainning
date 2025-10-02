@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.thanhquan.controller.request.SigninRequest;
 import vn.thanhquan.controller.response.TokenResponse;
+import vn.thanhquan.service.AuthenticationService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,12 +20,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Tag(name = "Authentication Controller")
 @RequiredArgsConstructor
 public class AuthenticationController {
+
+    private final AuthenticationService authenticationService;
+
     @Operation(summary = "Access token", description = "Get access token by username and password")
     @PostMapping("/access-token")
     public TokenResponse getAccessToken(@RequestBody SigninRequest request) {
         log.info("Access token request");
 
-        return TokenResponse.builder().accessToken("DUMMY-ACCESS-TOKEN").refreshToken("DUMMY-REFRESH-TOKEN").build();
+        return authenticationService.getAccessToken(request);
     }
 
     @Operation(summary = "Refresh token", description = "Get new access token by refresh token")
