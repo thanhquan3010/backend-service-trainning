@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -107,6 +108,7 @@ public class UserController {
 
     @Operation(summary = "Inactivated user", description = "API activate user from database")
     @DeleteMapping("/{userId}/del")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public Map<String, Object> deleteUser(@PathVariable long userId) {
         // Call the service to delete (inactivate) the user
         userService.delete(userId);
