@@ -2,6 +2,7 @@ package vn.thanhquan.controller.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import vn.thanhquan.common.Gender;
@@ -31,7 +32,8 @@ public class UserCreationRequest implements Serializable {
     private String phone;
 
     @NotBlank(message = "Password không được để trống")
-    @Size(min = 6, message = "Password phải có ít nhất 6 ký tự")
+    @Size(min = 8, message = "Password phải có ít nhất 8 ký tự")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "Mật khẩu phải chứa ít nhất một chữ hoa, một chữ thường, một số và một ký tự đặc biệt")
     private String password;
 
     private UserType type;
