@@ -117,16 +117,19 @@ public class UserController {
         return result;
     }
 
+    // Add endpoint to confirm email
+    @Operation(summary = "Confirm Email", description = "API confirm email for user")
     @GetMapping("/confirm-email")
     public void confirmEmail(@RequestParam String secretCode, HttpServletResponse response) throws IOException {
-        log.info("Confirm email: {}", secretCode);
+        log.info("Confirm email request received with secretCode: {}", secretCode);
         try {
-            // TODO check or compare secretCode from database
-
+            userService.confirmEmail(secretCode);
+            // Chuyển hướng đến trang thành công
+            response.sendRedirect("https://tayjava.vn/xac-thuc-thanh-cong");
         } catch (Exception e) {
-            log.error("Confirm email was failure!, errorMessage={}", e.getMessage());
-        } finally {
-            response.sendRedirect("https://tayjava.vn/wp-admin");
+            log.error("Email confirmation failed: {}", e.getMessage());
+            // Chuyển hướng đến trang lỗi
+            response.sendRedirect("https://tayjava.vn/xac-thuc-that-bai");
         }
     }
 }
