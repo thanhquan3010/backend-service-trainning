@@ -89,9 +89,4 @@ public class AppConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    @Bean
-    public SendGrid sendGrid(@Value("${spring.sendGrid.apiKey}") String apiKey) {
-        return new SendGrid(apiKey);
-    }
 }
