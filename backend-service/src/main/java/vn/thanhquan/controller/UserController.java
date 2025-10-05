@@ -80,7 +80,7 @@ public class UserController {
 
     @Operation(summary = "Update User", description = "API update user to db")
     @PutMapping("/update")
-    public Map<String, Object> updateUser(@RequestBody UserUpdateRequest request) {
+    public Map<String, Object> updateUser(@Valid @RequestBody UserUpdateRequest request) {
         // Call the service to perform the update
         userService.update(request);
 
@@ -93,7 +93,7 @@ public class UserController {
 
     @Operation(summary = "Change Password", description = "API change password for user to database")
     @PatchMapping("/change-pwd")
-    public Map<String, Object> changePassword(@RequestBody UserPasswordRequest request) {
+    public Map<String, Object> changePassword(@Valid @RequestBody UserPasswordRequest request) {
         // Call the service to change the password
         userService.changePassword(request);
 
