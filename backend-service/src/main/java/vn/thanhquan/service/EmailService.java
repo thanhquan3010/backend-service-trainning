@@ -21,6 +21,8 @@ import com.sendgrid.helpers.mail.objects.Personalization;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
+import vn.thanhquan.model.UserEntity;
+import vn.thanhquan.repository.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailService {
 
     private final SendGrid sendGrid;
+    private final UserRepository userRepository;
 
     @Value("${spring.sendGrid.fromEmail}")
     private String from;
@@ -71,54 +74,45 @@ public class EmailService {
      * @throws IOException
      */
     public void emailVerification(String to, String name) throws IOException {
-        log.info("Email verification started");
+        log.info("Email verification started for {}", to);
 
-        // Define sender and recipient
+        UserEntity user = userRepository.findByUsername(name)
+                .orElseThrow(() -> new RuntimeException("User not found: " + name));
+
+        String secretCode = UUID.randomUUID().toString();
+        user.setVerificationCode(secretCode);
+        userRepository.save(user);
+
         Email fromEmail = new Email(from, "Tây Java");
         Email toEmail = new Email(to);
-
-        // Define email subject
         String subject = "Xác thực tài khoản";
+        String verificationUrl = verificationLink + "?secretCode=" + secretCode;
 
-        // Initialize verification link (this should be generated and passed in)
-        String secretCode = String.format("?secretCode=xyz", UUID.randomUUID());
-
-        // TODO generate secretCode and save to database
-
-        // Define dynamic data for the template
         Map<String, String> map = new HashMap<>();
         map.put("name", name);
-        map.put("verification_link", verificationLink + "/?secretCode=xyz");
+        map.put("verification_link", verificationUrl);
 
-        // Create a new Mail object
         Mail mail = new Mail();
         mail.setFrom(fromEmail);
         mail.setSubject(subject);
 
-        // Personalize the email for the recipient
         Personalization personalization = new Personalization();
         personalization.addTo(toEmail);
-
-        // Add dynamic data to the personalization object
         map.forEach(personalization::addDynamicTemplateData);
-
         mail.addPersonalization(personalization);
 
-        // Set the SendGrid Template ID
         mail.setTemplateId(templateId);
 
-        // Create the API request
         Request request = new Request();
         request.setMethod(Method.POST);
         request.setEndpoint("mail/send");
         request.setBody(mail.build());
 
-        // Send the request and handle the response
         Response response = sendGrid.api(request);
         if (response.getStatusCode() == 202) {
-            log.info("Verification sent successfully");
+            log.info("Verification email sent successfully to {}", to);
         } else {
-            log.error("Verification sent failed");
+            log.error("Failed to send verification email to {}", to);
         }
     }
 }
