@@ -1,12 +1,22 @@
+# src/main/resources/application.yml
 server:
   port: 8081
 
 spring:
   application:
     name: backend-service
-  profiles:
-    active: @spring.profiles.active@
-
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+  sendGrid:
+    apiKey: ${SENDGRID_API_KEY} # Sử dụng biến môi trường
+    fromEmail: tranthanhquan09@gmail.com
+    templateId: d-8d276ce816254b399ebcc962d2f2199a
+    verificationLink: http://localhost:8080/user/confirm-email
 
 management:
   endpoints:
@@ -18,4 +28,25 @@ logging:
   level:
     root: INFO
     web: INFO
+    vn.thanhquan: DEBUG # Bật debug log cho package của bạn
 
+# Cấu hình Swagger/OpenAPI chung
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+openapi:
+  service:
+    api-docs: backend-service
+    server: http://localhost:${server.port}
+    title: Backend service
+    version: 1.0.0
+
+# Cấu hình JWT
+jwt:
+  expiryMin : 15
+  expiryMinute: 5
+  accessKey: ${JWT_ACCESS_KEY} # Sử dụng biến môi trường
+  refreshKey: ${JWT_REFRESH_KEY} # Sử dụng biến môi trường

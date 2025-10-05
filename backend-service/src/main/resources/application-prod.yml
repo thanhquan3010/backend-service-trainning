@@ -1,21 +1,20 @@
+# src/main/resources/application-prod.yml
 spring:
   config:
     activate:
       on-profile: prod
-devtools:
-  add-properties: true
-jpa:
-  database-platform: org.hibernate.dialect.H2Dialect
-  hibernate:
-    ddl-auto: update
-  show-sql: false
-  properties:
-    hibernate:
-      format_sql: true
-
-# application-prod.yml
-springdoc:
-  api-docs:
-    enabled: false
-  swagger-ui:
-    enabled: false
+  # Cấu hình datasource cho production
+  datasource:
+    url: ${PROD_DB_URL}
+    username: ${PROD_DB_USER}
+    password: ${PROD_DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  # Tắt Swagger trên production
+  springdoc:
+    api-docs:
+      enabled: false
+    swagger-ui:
+      enabled: false

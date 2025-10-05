@@ -1,50 +1,14 @@
+# src/main/resources/application-dev.yml
 spring:
   config:
     activate:
       on-profile: dev
-devtools:
-  add-properties: true
-
-datasource:
-  url: jdbc:postgresql://localhost:5432/postgres
-  username: thanhquan
-  password: 123
-jpa:
-  properties:
-    hibernate:
-      dialect: org.hibernate.dialect.PostgreSQLDialect
-  show-sql: false
-  hibernate:
-    ddl-auto: update
-
-sendGrid:
-  apiKey: ${SENDGRID_API_KEY}
-  fromEmail: tranthanhquan09@gmail.com
-  templateId: d-8d276ce816254b399ebcc962d2f2199a
-  verificationLink: http://localhost:8080/user/confirm-email
-# jpa:
-#   database-platform: org.hibernate.dialect.H2Dialect
-#   hibernate:
-#     ddl-auto: update
-#   show-sql: false
-#   properties:
-#     hibernate:
-#       format_sql: true
-# application-dev.yml
-springdoc:
-  api-docs:
-    enabled: true
-  swagger-ui:
-    enabled: true
-openapi:
-  service:
-    api-docs: backend-service
-    server: http://localhost:${server.port}
-    title: Backend service
-    version: 1.0.0
-
-jwt:
-  expiryMin : 15
-  expiryMinute: 5
-  accessKey: 9NR82kt/j0MxbBcQuHDFUINBrF9a1D2dLVbO2dEXtXc=
-  refreshKey: ByEciUNDzgU6LgSbaM1HOh9Qa4vfSCuNTyEcDgUORP0=
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: thanhquan
+    password: 123
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true # Bật show-sql cho dev
