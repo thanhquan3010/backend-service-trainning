@@ -27,7 +27,6 @@ public class AuthenticationController {
     @PostMapping("/access-token")
     public TokenResponse getAccessToken(@RequestBody SigninRequest request) {
         log.info("Access token request");
-
         return authenticationService.getAccessToken(request);
     }
 
@@ -35,8 +34,7 @@ public class AuthenticationController {
     @PostMapping("/refresh-token")
     public TokenResponse getRefreshToken(@RequestBody String refreshToken) {
         log.info("Refresh token request, refresh token: {}", refreshToken);
-
-        return TokenResponse.builder().accessToken("DUMMY-NEW-ACCESS-TOKEN").refreshToken("DUMMY-REFRESH-TOKEN")
-                .build();
+        // Replace mock data with service call
+        return authenticationService.getRefreshToken(refreshToken);
     }
 }

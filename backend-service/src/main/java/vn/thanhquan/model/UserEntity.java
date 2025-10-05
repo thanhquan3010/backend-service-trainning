@@ -2,7 +2,9 @@ package vn.thanhquan.model;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -26,15 +28,18 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-
 
 @Getter
 @Setter
 @Entity
 @Table(name = "tbl_user")
 public class UserEntity implements Serializable, UserDetails {
+
+    // Add roles field
+    // You may need to import List and UserHasRole
+    private List<UserHasRole> roles = Collections.emptyList();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -83,16 +88,13 @@ public class UserEntity implements Serializable, UserDetails {
     private Date createdAt;
 
     @UpdateTimestamp // Tự động cập nhật ngày giờ khi record được cập nhật
-    @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAuthorities'");
+
+        List<Role> roleList = roles.stream().map(UserHasRole::getRole).toList();
+
+        List<String> roleNames = roleList.stream().map(Role::getName).toList();
+
+        return roleNames.stream().map(SimpleGrantedAuthority::new).toList();
     }
-
-    
-
 }

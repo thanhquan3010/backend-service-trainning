@@ -1,7 +1,6 @@
 package vn.thanhquan.controller;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.thanhquan.controller.request.UserCreationRequest;
@@ -44,27 +42,8 @@ public class UserController {
     public Map<String, Object> getList(@RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "0") int page) {
 
-        UserResponse userResponse1 = new UserResponse();
-        userResponse1.setId(1L);
-        userResponse1.setFirstName("Tran");
-        userResponse1.setLastName("Quan");
-        userResponse1.setGender("");
-        userResponse1.setBirthday(new Date());
-        userResponse1.setUsername("admin");
-        userResponse1.setEmail("admin@gmail.com");
-        userResponse1.setPhone("8975118228");
-
-        UserResponse userResponse2 = new UserResponse();
-        userResponse2.setId(2L);
-        userResponse2.setFirstName("Leo");
-        userResponse2.setLastName("Messi");
-        userResponse2.setGender("");
-        userResponse2.setBirthday(new Date());
-        userResponse2.setUsername("user");
-        userResponse2.setEmail("user@gmail.com");
-        userResponse2.setPhone("8971234567");
-
-        List<UserResponse> userlist = List.of(userResponse1, userResponse2);
+        // Replace mock data with service call
+        List<UserResponse> userlist = userService.findAll();
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
@@ -77,19 +56,12 @@ public class UserController {
     @Operation(summary = "Get user detail", description = "API retrieve user detail from db")
     @GetMapping("/{userId}")
     public Map<String, Object> getUserDetail(@PathVariable Long userId) {
-        UserResponse userDetail = new UserResponse();
-        userDetail.setId(1L);
-        userDetail.setFirstName("Tran");
-        userDetail.setLastName("Quan");
-        userDetail.setGender("");
-        userDetail.setBirthday(new Date());
-        userDetail.setUsername("admin");
-        userDetail.setEmail("admin@gmail.com");
-        userDetail.setPhone("8975118228");
+        // Replace mock data with service call
+        UserResponse userDetail = userService.findById(userId);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
-        result.put("message", "user list");
+        result.put("message", "user detail");
         result.put("data", userDetail);
         return result;
     }
@@ -97,7 +69,6 @@ public class UserController {
     @Operation(summary = "Create User", description = "API add new user to db")
     @PostMapping("/add")
     public ResponseEntity<Object> createUser(@RequestBody UserCreationRequest request) {
-
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.CREATED.value());
         result.put("message", "User created successfully");
@@ -108,7 +79,9 @@ public class UserController {
 
     @Operation(summary = "Update User", description = "API update user to db")
     @PutMapping("/update")
-    public Map<String, Object> updateUser(UserUpdateRequest request) {
+    public Map<String, Object> updateUser(@RequestBody UserUpdateRequest request) {
+        // Call the service to perform the update
+        userService.update(request);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.ACCEPTED.value());
@@ -119,7 +92,9 @@ public class UserController {
 
     @Operation(summary = "Change Password", description = "API change password for user to database")
     @PatchMapping("/change-pwd")
-    public Map<String, Object> changePassword(UserPasswordRequest request) {
+    public Map<String, Object> changePassword(@RequestBody UserPasswordRequest request) {
+        // Call the service to change the password
+        userService.changePassword(request);
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.NO_CONTENT.value());
@@ -127,7 +102,19 @@ public class UserController {
         result.put("data", "");
 
         return result;
+    }
 
+    @Operation(summary = "Inactivated user", description = "API activate user from database")
+    @DeleteMapping("/{userId}/del")
+    public Map<String, Object> deleteUser(@PathVariable long userId) {
+        // Call the service to delete (inactivate) the user
+        userService.delete(userId);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("status", HttpStatus.OK.value()); // Using OK 200 or NO_CONTENT 204 is also common
+        result.put("message", "User deleted successfully");
+        result.put("data", "");
+        return result;
     }
 
     @GetMapping("/confirm-email")
@@ -141,17 +128,5 @@ public class UserController {
         } finally {
             response.sendRedirect("https://tayjava.vn/wp-admin");
         }
-    }
-
-    @Operation(summary = "Inactivated user", description = "API activate user from database")
-    @DeleteMapping("/{userId}/del")
-    public Map<String, Object> deleteUser(@PathVariable long userId) {
-
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("status", HttpStatus.RESET_CONTENT.value());
-        result.put("message", "User deleted successfully");
-        result.put("data", "");
-        return result; // 205
-
     }
 }

@@ -18,7 +18,7 @@ public class UserCreationRequest implements Serializable {
     private String username;
     private String email;
     private String phone;
+    private String password;
     private UserType type;
-
     private List<AddressRequest> addresses; // home , office
 }
