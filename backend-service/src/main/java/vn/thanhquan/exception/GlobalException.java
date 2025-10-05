@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
+// Help to handle exceptions globally
 public class GlobalException {
 
     @ExceptionHandler(ResourceNotFoundException.class)
