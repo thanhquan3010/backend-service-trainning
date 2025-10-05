@@ -6,13 +6,16 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -39,7 +42,8 @@ public class UserEntity implements Serializable, UserDetails {
 
     // Add roles field
     // You may need to import List and UserHasRole
-    private List<UserHasRole> roles = Collections.emptyList();
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<UserHasRole> roles;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -87,6 +91,11 @@ public class UserEntity implements Serializable, UserDetails {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date updatedAt;
+
     @UpdateTimestamp // Tự động cập nhật ngày giờ khi record được cập nhật
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -96,5 +105,25 @@ public class UserEntity implements Serializable, UserDetails {
         List<String> roleNames = roleList.stream().map(Role::getName).toList();
 
         return roleNames.stream().map(SimpleGrantedAuthority::new).toList();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
