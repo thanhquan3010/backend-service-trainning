@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,11 +23,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import com.sendgrid.SendGrid;
 
 import lombok.RequiredArgsConstructor;
-import vn.thanhquan.service.UserService;
-import vn.thanhquan.service.UserServiceDetail;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity // Kích hoạt annotation @PreAuthorize
 public class AppConfig {
     private final CustomizeRequestFilter customizeRequestFilter;
 

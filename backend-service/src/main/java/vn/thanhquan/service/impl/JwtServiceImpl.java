@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -111,6 +112,13 @@ public class JwtServiceImpl implements JwtService {
             log.error("Failed to extract username from {} token: {}", tokenType, e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public boolean isTokenValid(String token, UserDetails userDetails, TokenType tokenType) {
+        final String username = extractUsername(token, tokenType);
+        SecretKey key = (tokenType == TokenType.ACCESS_TOKEN) ? ACCESS_TOKEN_KEY : REFRESH_TOKEN_KEY;
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token, key);
     }
 
     public boolean isTokenExpired(String token, SecretKey key) {

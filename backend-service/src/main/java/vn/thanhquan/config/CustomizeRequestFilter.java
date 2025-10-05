@@ -71,9 +71,18 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
             // Tải thông tin người dùng từ database
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
-            // TODO: Ở đây bạn có thể thêm một bước kiểm tra token có hợp lệ không,
-            // ví dụ: jwtService.isTokenValid(jwt, userDetails);
-
+            if (jwtService.isTokenValid(jwt, userDetails, TokenType.ACCESS_TOKEN)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities());
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                log.info("User '{}' authenticated successfully.", username);
+            } else {
+                log.warn("JWT token is not valid for user '{}'", username);
+            }
             // Tạo đối tượng xác thực
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userDetails,
