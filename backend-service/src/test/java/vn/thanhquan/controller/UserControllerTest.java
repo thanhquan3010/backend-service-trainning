@@ -5,13 +5,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.thanhquan.controller.request.UserCreationRequest;
+import vn.thanhquan.service.JwtService;
 import vn.thanhquan.service.UserService;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -25,8 +29,24 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper; // Dùng để chuyển đổi object Java sang JSON
 
-    @Mock // 3. Tạo một mock cho UserService và đưa vào ApplicationContext
+    // 1. Tiêm các bean giả lập đã được định nghĩa trong TestConfig
+    @Autowired
     private UserService userService;
+
+    @TestConfiguration
+    static class TestConfig {
+        // 3. Tạo một bean giả lập (mock) cho UserService
+        @Bean
+        public UserService userService() {
+            return mock(UserService.class); // Sử dụng Mockito.mock()
+        }
+
+        // 4. Tạo một bean giả lập cho JwtService để đáp ứng dependency
+        @Bean
+        public JwtService jwtService() {
+            return mock(JwtService.class);
+        }
+    }
 
     @Test
     void createUser_whenValidRequest_shouldReturnCreated() throws Exception {

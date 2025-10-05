@@ -7,8 +7,6 @@ import vn.thanhquan.controller.response.UserResponse;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 public interface UserService {
 
     List<UserResponse> findAll();
