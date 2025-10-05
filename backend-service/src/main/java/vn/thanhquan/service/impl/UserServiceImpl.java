@@ -173,17 +173,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void changePassword(UserPasswordRequest req) {
-        log.info("Changing password for user: {}", req);
+        log.info("Changing password for user: {}", req.getId());
         UserEntity userEntity = getUserEntity(req.getId());
-        if (req.getPassword().equals(req.getConfirmPassword())) {
-            userEntity.setPassword(passwordEncoder.encode(req.getPassword()));
-        } else {
-            // Consider throwing an exception here if passwords don't match
-            log.error("Passwords do not match for user {}", req.getId());
-            return;
+        if (!req.getPassword().equals(req.getConfirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match");
         }
+        userEntity.setPassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(userEntity);
-        log.info("Changing password success for user {}", userEntity.getId());
+        log.info("Password changed successfully for user {}", userEntity.getId());
     }
 
     @Override
