@@ -37,7 +37,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 @Setter
 @Entity
-@Table(name = "tbl_user")
+@Table(name = "tbl_user", uniqueConstraints = {
+        @jakarta.persistence.UniqueConstraint(columnNames = "username"),
+        @jakarta.persistence.UniqueConstraint(columnNames = "email")
+})
 public class UserEntity implements Serializable, UserDetails {
 
     // Add roles field
