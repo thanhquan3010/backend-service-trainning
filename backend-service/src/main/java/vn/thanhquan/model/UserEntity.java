@@ -96,6 +96,10 @@ public class UserEntity implements Serializable, UserDetails {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
+    // Verification code for email verification
+    @Column(name = "verification_code", length = 64)
+    private String verificationCode;
+
     @UpdateTimestamp // Tự động cập nhật ngày giờ khi record được cập nhật
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
