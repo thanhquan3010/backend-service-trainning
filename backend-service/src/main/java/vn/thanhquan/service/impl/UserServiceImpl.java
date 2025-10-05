@@ -199,4 +199,17 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
+
+    // Add method to confirm email
+    @Override
+    public void confirmEmail(String secretCode) {
+        log.info("Confirming email with secret code: {}", secretCode);
+        UserEntity user = userRepository.findByVerificationCode(secretCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid verification code: " + secretCode));
+
+        user.setStatus(UserStatus.ACTIVE);
+        user.setVerificationCode(null); // Xóa mã sau khi sử dụng
+        userRepository.save(user);
+        log.info("User {}'s email confirmed successfully", user.getUsername());
+    }
 }
