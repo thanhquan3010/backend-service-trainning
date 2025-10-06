@@ -23,14 +23,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import com.sendgrid.SendGrid;
 
 import lombok.RequiredArgsConstructor;
+import vn.thanhquan.service.impl.UserServiceImpl;
 
 @Configuration
 @RequiredArgsConstructor
 @EnableMethodSecurity // Kích hoạt annotation @PreAuthorize
 public class AppConfig {
     private final CustomizeRequestFilter customizeRequestFilter;
-
-    private final UserDetailsService userDetailsService;
+    private final UserServiceImpl userService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -81,7 +81,7 @@ public class AppConfig {
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setPasswordEncoder(passwordEncoder());
-        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setUserDetailsService(userService);
         return authProvider;
     }
 

@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +21,7 @@ import vn.thanhquan.controller.request.UserPasswordRequest;
 import vn.thanhquan.controller.request.UserUpdateRequest;
 import vn.thanhquan.controller.response.UserResponse;
 import vn.thanhquan.exception.ResourceNotFoundException;
+import vn.thanhquan.mapper.UserMapper;
 import vn.thanhquan.model.AddressEntity;
 import vn.thanhquan.model.UserEntity;
 import vn.thanhquan.repository.AddressRepository;
@@ -27,40 +32,28 @@ import vn.thanhquan.service.UserService;
 @Service
 @Slf4j(topic = "USER-SERVICE")
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-
-    // Helper method to convert UserEntity to UserResponse
-    private UserResponse convertToUserResponse(UserEntity userEntity) {
-        UserResponse userResponse = new UserResponse();
-        userResponse.setId(userEntity.getId());
-        userResponse.setFirstName(userEntity.getFirstName());
-        userResponse.setLastName(userEntity.getLastName());
-        userResponse.setGender(userEntity.getGender() != null ? userEntity.getGender().name() : null);
-        userResponse.setBirthday(userEntity.getBirthday());
-        userResponse.setUsername(userEntity.getUsername());
-        userResponse.setEmail(userEntity.getEmail());
-        userResponse.setPhone(userEntity.getPhone());
-        return userResponse;
-    }
+    private final UserMapper userMapper;
 
     @Override
     public List<UserResponse> findAll() {
         log.info("Finding all users");
-        return userRepository.findAll().stream()
-                .map(this::convertToUserResponse)
-                .collect(Collectors.toList());
+        List<UserEntity> users = userRepository.findAll();
+        // Dùng mapper để chuyển đổi
+        return userMapper.toUserResponseList(users);
     }
 
     @Override
     public UserResponse findById(Long id) {
         log.info("Finding user by id: {}", id);
         UserEntity userEntity = getUserEntity(id);
-        return convertToUserResponse(userEntity);
+        // Dùng mapper để chuyển đổi
+        return userMapper.toUserResponse(userEntity);
     }
 
     @Override
@@ -68,17 +61,15 @@ public class UserServiceImpl implements UserService {
         log.info("Finding user by username: {}", username);
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
-        return convertToUserResponse(userEntity);
+        return userMapper.toUserResponse(userEntity);
     }
 
     @Override
     public UserResponse findByEmail(String email) {
         log.info("Finding user by email: {}", email);
-        // Assuming you add a findByEmail method in your UserRepository
-        // If not, this will need to be implemented. For now, this is a placeholder.
-        UserEntity userEntity = userRepository.findByUsername(email) // Placeholder, should be findByEmail
+        UserEntity userEntity = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
-        return convertToUserResponse(userEntity);
+        return userMapper.toUserResponse(userEntity);
     }
 
     @Override
@@ -208,5 +199,24 @@ public class UserServiceImpl implements UserService {
         user.setVerificationCode(null); // Xóa mã sau khi sử dụng
         userRepository.save(user);
         log.info("User {}'s email confirmed successfully", user.getUsername());
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // 1. Dùng repository đã sửa ở Bước 1 để tìm user
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
+        // 2. Kiểm tra trạng thái người dùng
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            throw new UsernameNotFoundException("User is inactive: " + username);
+        }
+
+        // 3. Chuyển đổi User model của bạn thành UserDetails của Spring Security
+        return new User(
+                user.getUsername(),
+                user.getPassword(),
+                user.getAuthorities() // Sử dụng quyền thực tế thay vì danh sách rỗng
+        );
     }
 }
