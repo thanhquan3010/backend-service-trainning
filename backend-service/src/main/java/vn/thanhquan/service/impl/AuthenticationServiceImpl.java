@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import vn.thanhquan.controller.request.SigninRequest;
 import vn.thanhquan.controller.response.TokenResponse;
+import vn.thanhquan.exception.InvalidDataException;
+import vn.thanhquan.exception.ResourceNotFoundException;
 import vn.thanhquan.service.AuthenticationService;
 import vn.thanhquan.service.JwtService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,10 +33,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.userRepository = userRepository;
     }
 
-    // TODO: Replace with actual user validation and authorities retrieval
-    private Collection<? extends GrantedAuthority> getAuthoritiesForUser(String username) {
-        return Collections.emptyList();
-    }
 
     @Override
     public TokenResponse getAccessToken(SigninRequest requestToken) {
@@ -60,7 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             // lookup real user id from repository
             long userId = userRepository.findByUsername(username)
                     .map(u -> u.getId())
-                    .orElseThrow(() -> new RuntimeException("User not found: " + username));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
 
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
@@ -72,7 +70,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     .refreshToken(refreshToken)
                     .build();
         } catch (AuthenticationException ex) {
-            throw new RuntimeException("Authentication failed: " + ex.getMessage(), ex);
+            throw new InvalidDataException("Authentication failed: " + ex.getMessage(), ex);
         }
     }
 
@@ -81,7 +79,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // 1. Extract username from refresh token using REFRESH_TOKEN type
         String username = jwtService.extractUsername(refreshToken, vn.thanhquan.common.TokenType.REFRESH_TOKEN);
         if (username == null) {
-            throw new RuntimeException("Invalid refresh token: username not found");
+            throw new InvalidDataException("Invalid refresh token: username not found");
         }
 
         // 2. Find user by username
@@ -102,6 +100,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                             .refreshToken(refreshToken)
                             .build();
                 })
-                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
     }
 }

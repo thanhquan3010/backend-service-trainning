@@ -83,19 +83,6 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
             } else {
                 log.warn("JWT token is not valid for user '{}'", username);
             }
-            // Tạo đối tượng xác thực
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null, // Credentials (password) là null vì ta đang dùng JWT
-                    userDetails.getAuthorities());
-
-            // Gắn thêm các chi tiết của request vào đối tượng xác thực
-            authToken.setDetails(
-                    new WebAuthenticationDetailsSource().buildDetails(request));
-
-            // Cập nhật SecurityContextHolder với thông tin người dùng đã xác thực
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-            log.info("User '{}' authenticated successfully.", username);
         }
 
         // 6. Cho phép request đi tiếp đến filter tiếp theo

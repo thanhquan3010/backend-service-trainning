@@ -5,6 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,18 +43,40 @@ import vn.thanhquan.service.UserService;
 public class UserController {
     private final UserService userService;
 
-    @Operation(summary = "Get user list", description = "API retrieve user from db")
+    @Operation(summary = "Get user list", description = "API retrieve user from db with pagination and search")
     @GetMapping("/list")
     public Map<String, Object> getList(@RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "20") int size, @RequestParam(defaultValue = "0") int page) {
+            @RequestParam(defaultValue = "20") int size, 
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
 
-        // Replace mock data with service call
-        List<UserResponse> userlist = userService.findAll();
+        // Create Pageable object
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+            Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<UserResponse> userPage;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            // Search with keyword
+            userPage = userService.searchUsers(keyword.trim(), pageable);
+        } else {
+            // Get all users with pagination
+            userPage = userService.findAllWithPagination(pageable);
+        }
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("status", HttpStatus.OK.value());
         result.put("message", "user list");
-        result.put("data", userlist);
+        result.put("data", userPage.getContent());
+        result.put("pagination", Map.of(
+            "currentPage", userPage.getNumber(),
+            "totalPages", userPage.getTotalPages(),
+            "totalElements", userPage.getTotalElements(),
+            "size", userPage.getSize(),
+            "hasNext", userPage.hasNext(),
+            "hasPrevious", userPage.hasPrevious()
+        ));
 
         return result;
     }

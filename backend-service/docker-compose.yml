@@ -1,26 +1,29 @@
 version: '3.8'
 
 services:
-  # Dịch vụ Cơ sở dữ liệu MySQL
+  # MySQL Database Service
   mysql:
     image: mysql:8.0
     container_name: mysql-db
     restart: always
     environment:
-      MYSQL_DATABASE: testdb
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: backend-service
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-password}
     ports:
-      # Ánh xạ cổng 3306 của container ra cổng 3306 trên máy thật
       - "3306:3306"
     volumes:
-      # Giữ lại dữ liệu database ngay cả khi container bị xóa
       - mysql_data:/var/lib/mysql
-      # Chạy script SQL để khởi tạo database khi container được tạo lần đầu
       - ./initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
     networks:
       - my_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-  # Dịch vụ ứng dụng Backend
+  # Backend Service Application
   backend-service:
     container_name: backend-service
     build:
@@ -28,19 +31,39 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-      # Ánh xạ cổng 8080 của ứng dụng ra cổng 8080 trên máy thật
-      - "8080:8080"
+      - "8081:8081"
     networks:
       - my_network
     depends_on:
-      # Yêu cầu Docker khởi động service 'mysql' trước 'backend-service'
-      - mysql
+      mysql:
+        condition: service_healthy
     environment:
-      # Cấu hình để backend kết nối tới database
-      # Tên 'mysql' chính là tên của service database ở trên
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/testdb?useSSL=false
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=password
+      # Spring Profile
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
+      
+      # Database Configuration
+      - DB_URL=jdbc:mysql://mysql:3306/backend-service?useSSL=false&serverTimezone=UTC
+      - DB_USERNAME=root
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      
+      # JWT Configuration
+      - JWT_ACCESS_KEY=${JWT_ACCESS_KEY}
+      - JWT_REFRESH_KEY=${JWT_REFRESH_KEY}
+      
+      # SendGrid Configuration
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - SENDGRID_FROM_EMAIL=${SENDGRID_FROM_EMAIL}
+      - SENDGRID_TEMPLATE_ID=${SENDGRID_TEMPLATE_ID}
+      - VERIFICATION_LINK=${VERIFICATION_LINK:-http://localhost:8081/user/confirm-email}
+      
+      # CORS Configuration
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:4200}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
 
 # Định nghĩa volumes và networks để quản lý tập trung
 volumes:

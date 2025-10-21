@@ -6,10 +6,16 @@ import vn.thanhquan.controller.request.UserUpdateRequest;
 import vn.thanhquan.controller.response.UserResponse;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 
     List<UserResponse> findAll();
+    
+    Page<UserResponse> findAllWithPagination(Pageable pageable);
+    
+    Page<UserResponse> searchUsers(String keyword, Pageable pageable);
 
     UserResponse findById(Long id);
 

@@ -48,6 +48,10 @@ public class UserEntity implements Serializable, UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<UserHasRole> roles;
 
+    // Add addresses field
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<AddressEntity> addresses;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -59,7 +63,6 @@ public class UserEntity implements Serializable, UserDetails {
     private String lastName;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "gender")
     private Gender gender;
 
@@ -81,12 +84,10 @@ public class UserEntity implements Serializable, UserDetails {
 
     @Enumerated(EnumType.STRING) // Lưu trữ giá trị enum dưới dạng chuỗi (ví dụ: "ADMIN", "USER")
     @Column(length = 50)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private UserType type;
 
     @Enumerated(EnumType.STRING) // Lưu trữ giá trị enum dưới dạng chuỗi (ví dụ: "ACTIVE", "INACTIVE")
     @Column(length = 50)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private UserStatus status;
 
     @CreationTimestamp // Tự động gán ngày giờ khi tạo mới record
@@ -103,7 +104,6 @@ public class UserEntity implements Serializable, UserDetails {
     @Column(name = "verification_code", length = 64)
     private String verificationCode;
 
-    @UpdateTimestamp // Tự động cập nhật ngày giờ khi record được cập nhật
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 

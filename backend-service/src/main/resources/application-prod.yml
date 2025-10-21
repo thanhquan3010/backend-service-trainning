@@ -3,18 +3,48 @@ spring:
   config:
     activate:
       on-profile: prod
-  # Cấu hình datasource cho production
+  # Production database configuration
   datasource:
     url: ${PROD_DB_URL}
     username: ${PROD_DB_USER}
     password: ${PROD_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
   jpa:
+    hibernate:
+      ddl-auto: validate  # Only validate in production, do not modify schema
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  # Tắt Swagger trên production
+    show-sql: false
+  # Disable Swagger in production for security
   springdoc:
     api-docs:
       enabled: false
     swagger-ui:
       enabled: false
+
+# JWT configuration for production
+jwt:
+  secret:
+    access-key: ${JWT_ACCESS_KEY}
+    refresh-key: ${JWT_REFRESH_KEY}
+
+# CORS configuration for production
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+# Production logging configuration
+logging:
+  level:
+    root: WARN
+    vn.thanhquan: INFO
+  file:
+    name: /var/log/backend-service/application.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

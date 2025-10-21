@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -46,6 +48,20 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         List<UserEntity> users = userRepository.findAll();
         // Dùng mapper để chuyển đổi
         return userMapper.toUserResponseList(users);
+    }
+
+    @Override
+    public Page<UserResponse> findAllWithPagination(Pageable pageable) {
+        log.info("Finding all users with pagination: page={}, size={}", pageable.getPageNumber(), pageable.getPageSize());
+        Page<UserEntity> userPage = userRepository.findAll(pageable);
+        return userPage.map(userMapper::toUserResponse);
+    }
+
+    @Override
+    public Page<UserResponse> searchUsers(String keyword, Pageable pageable) {
+        log.info("Searching users with keyword: '{}', page={}, size={}", keyword, pageable.getPageNumber(), pageable.getPageSize());
+        Page<UserEntity> userPage = userRepository.searchUsers(keyword, pageable);
+        return userPage.map(userMapper::toUserResponse);
     }
 
     @Override

@@ -8,7 +8,7 @@ import com.sendgrid.SendGrid;
 
 @Configuration
 public class SendGridConfig {
-    @Value("${spring.sendgrid.apiKey}")
+    @Value("${spring.sendgrid.apiKey:dummy-key-for-development}")
     private String sendGridApiKey;
 
     @Bean

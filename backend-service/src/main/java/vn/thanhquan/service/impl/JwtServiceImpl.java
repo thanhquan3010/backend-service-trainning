@@ -118,7 +118,7 @@ public class JwtServiceImpl implements JwtService {
     public boolean isTokenValid(String token, UserDetails userDetails, TokenType tokenType) {
         final String username = extractUsername(token, tokenType);
         SecretKey key = (tokenType == TokenType.ACCESS_TOKEN) ? ACCESS_TOKEN_KEY : REFRESH_TOKEN_KEY;
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token, key);
+        return (username != null && username.equals(userDetails.getUsername())) && !isTokenExpired(token, key);
     }
 
     public boolean isTokenExpired(String token, SecretKey key) {
